@@ -8,7 +8,7 @@ _This project belongs to [OGWW](https://github.com/elliottssu/ogww)。_
 
 Use arcgis to draw a map, call NASA open api map slice data to achieve a complete moon map drawing, the name layer comes from USGS.
 
-![Example](./example.png)
+![Example](./example/view.png)
 
 ## Get Started 🚀
 
