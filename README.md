@@ -2,13 +2,13 @@ English | [简体中文](./README.CN.md)
 
 # Moon Map
 
-#### 👽👽👽 月球完整的地图切片和名字图层 👽👽👽
+#### 👽👽👽 Complete map slice and name layer of the moon 👽👽👽
 
 _This project belongs to [OGWW](https://github.com/elliottssu/ogww)。_
 
 Use arcgis to draw a map, call NASA open api map slice data to achieve a complete moon map drawing, the name layer comes from USGS.
 
-![Example](./example.png)
+![Example](./example/view.png)
 
 ## Get Started 🚀
 
