@@ -2,7 +2,7 @@ English | [简体中文](./README.CN.md)
 
 # Moon Map
 
-#### 👽👽👽 月球完整的地图切片和名字图层 👽👽👽
+#### 👽👽👽 Complete map slice and name layer of the moon 👽👽👽
 
 _This project belongs to [OGWW](https://github.com/elliottssu/ogww)。_
 
