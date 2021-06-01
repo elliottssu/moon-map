@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>MOON MAP 2D - OGWW</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/dark/main.css" />
+
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #000;
+        }
+
+        .esri-layer-list.esri-widget.esri-widget--panel {
+            max-width: 200px;
+        }
+
+        .esri-layer-list__item-container {
+            padding: 6px;
+            cursor: pointer;
+        }
+
+        .esri-layer-list__item-label {
+            outline: none;
+        }
+
+        .esri-view-height-xsmall .esri-ui-corner .esri-component.esri-widget--panel {
+            max-height: 265px;
+        }
+
+        .esri-component.esri-attribution {
+            background-color: transparent;
+            color: rgba(220, 220, 220, 0.68);
+            padding: 2px;
+        }
+
+        .esri-view .esri-view-surface--inset-outline {
+            outline: none;
+        }
+
+        .esri-view .esri-view-surface--inset-outline:focus::after {
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+
+    <script src="https://js.arcgis.com/4.19/"></script>
+    <script>
+
+        // arcgis api 地址: https://developers.arcgis.com/javascript/latest/
+
+        // 获取路由参数
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) { return pair[1]; }
+            }
+            return (false);
+        }
+
+        // 获取语言版本
+        var lang = getQueryVariable('lang') === 'en' ? 'en' : 'cn';
+
+        const isCn = lang === 'cn'
+
+        // 图层地址  todo：英文状态下使用境外地图图层 官网：https://trek.nasa.gov/moon/
+        var wmtsLayerUrl = true ? {
+            url: "https://s1.ogww.com/lab/moon/moon-map",
+            id: "moon-map"
+        } : {
+            url: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02",
+            id: "LRO_WAC_Mosaic_Global_303ppd_v02"
+        }
+
+        // 定义多语言
+        var il8n = {
+            csvTemp: {
+                cn: {
+                    title: "{Feature_Name_CN}",
+                    content: "英文名： {Feature_Name} <br> 来源： {Origin_CN} <br> 批准状态：{Approval_Status_CN} <br> 批准时间：{Approval_Date} "
+                },
+                en: {
+                    title: "{Feature_Name}",
+                    content: "Origin: {Origin} <br> Approval Status: {Approval_Status} <br> Approval Date: {Approval_Date} "
+                }
+            },
+            moon_map: {
+                cn: '月球地图',
+                en: 'Moon Map'
+            },
+            all_name: {
+                cn: '所有名字（9046个）',
+                en: 'All Name（9046）'
+            },
+            chinese_name: {
+                cn: '中国地名（27个）',
+                en: 'Chinese Name(27)'
+            },
+            chinese_add_name: {
+                cn: '中国地名新增（8个）',
+                en: 'Chinese Added Name(8)'
+            },
+        }
+
+        // 中国地名图标 黄色方形
+        var markIconChina = {
+            type: "simple",  // new SimpleRenderer()
+            symbol: {
+                type: "simple-marker",
+                size: 6,
+                style: 'square',
+                color: "#ff6a02",
+            }
+        };
+
+        // 中国地名新增图标 绿色方形
+        var markIconChinaAdd = {
+            type: "simple", 
+            symbol: {
+                type: "simple-marker",
+                size: 6,
+                style: 'square',
+                color: "#42d81e",
+            }
+        };
+
+        // 全部地名图标 灰色圆形
+        var markIconAll = {
+            type: "simple",
+            symbol: {
+                type: "simple-marker",
+                size: 4,
+                color: "#555555",
+                outline: {
+                    width: 0.5,
+                    color: "white"
+                }
+
+            }
+        };
+
+
+        /**
+         * 获取CSV图层
+         * @param CSVLayer csv函数对象
+         * @param url 文件路径
+         * @param title 标题
+         * @param isVisible 初始化是否显示
+         * @param markIcon 图标
+         */
+        function getCSVLayer(CSVLayer, url, title, isVisible, markIcon) {
+            return new CSVLayer({
+                url: 'https://s1.ogww.com/lab/moon/moon-map/layer/' + url + '.csv',
+                title: title,
+                visible: isVisible,
+                popupTemplate: il8n.csvTemp[lang],
+                latitudeField: 'Center_Latitude',
+                longitudeField: 'Center_Longitude',
+                renderer: markIcon,
+                opacity: 0.5,
+                labelingInfo: [
+                    {
+                        labelExpression: isCn ? "[Feature_Name_CN]" : "[Feature_Name]",
+                        labelPlacement: "above-right",
+                        symbol: {
+                            type: "text",
+                            color: "white",
+                            font: {
+                                size: 10
+                            },
+                            backgroundColor: [0, 0, 0, 0.5]
+                        },
+                    }
+                ]
+            });
+        }
+
+
+
+
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/WMTSLayer",
+            "esri/layers/CSVLayer",
+            "esri/widgets/LayerList",
+            "esri/widgets/ScaleBar",
+            "esri/widgets/Expand",
+            "esri/widgets/Home",
+            "esri/widgets/Fullscreen",
+        ], function (Map, MapView, WMTSLayer, CSVLayer, LayerList, ScaleBar, Expand, Home, Fullscreen, Bookmarks, Bookmark) {
+
+            // 设置WMTS图层
+            var layerMap = new WMTSLayer({
+                url: wmtsLayerUrl.url,
+                title: il8n.moon_map[lang],
+                copyright:
+                    "Moon Map | OGWW LAB | Source: NASA,USGS",
+                activeLayer: {
+                    id: wmtsLayerUrl.id
+                }
+            });
+
+            var layerNameChinese = getCSVLayer(CSVLayer, 'moon-name-chinese', il8n.chinese_name[lang], true, markIconChina)
+            var layerNameChineseAdd = getCSVLayer(CSVLayer, 'moon-name-chinese-add', il8n.chinese_add_name[lang], true, markIconChinaAdd)
+            var layerNameAll = getCSVLayer(CSVLayer, 'moon-name-all', il8n.all_name[lang], false, markIconAll)
+
+
+            var map = new Map({
+                layers: [layerMap]
+            });
+
+            map.add(layerNameAll)
+            map.add(layerNameChineseAdd)
+            map.add(layerNameChinese)
+
+            // 设置地图基本信息（放大倍数、中心坐标）
+            var view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [16.463814503649008, 48.13488142774444],
+                scale: 30000000,
+                constraints: {
+                    minScale: 150000000,
+                    maxScale: 800000
+                },
+            });
+            view.when(function () {
+                view.extent = layerMap.fullExtent;
+
+                // 添加名字图层
+                const llExpand = new Expand({
+                    view: view,
+                    content: new LayerList({
+                        view: view
+                    }),
+                    expanded: true
+                });
+                view.ui.add(llExpand, "top-right");
+
+                // 添加回到首页
+                var homeWidget = new Home({
+                    view: view
+                });
+                view.ui.add(homeWidget, "top-left");
+
+                // 添加全屏
+                var fullscreen = new Fullscreen({
+                    view: view
+                });
+                view.ui.add(fullscreen, "bottom-right");
+            });
+        });
+
+    </script>
+</body>
+
+</html>
