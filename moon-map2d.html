@@ -73,7 +73,7 @@
         // 获取语言版本
         var lang = getQueryVariable('lang') === 'en' ? 'en' : 'cn';
 
-        const isCn = lang === 'cn'
+        var isCn = lang === 'cn'
 
         // 图层地址  todo：英文状态下使用境外地图图层 官网：https://trek.nasa.gov/moon/
         var wmtsLayerUrl = true ? {
@@ -127,7 +127,7 @@
 
         // 中国地名新增图标 绿色方形
         var markIconChinaAdd = {
-            type: "simple", 
+            type: "simple",
             symbol: {
                 type: "simple-marker",
                 size: 6,
@@ -246,7 +246,7 @@
                     content: new LayerList({
                         view: view
                     }),
-                    expanded: true
+                    expanded: false
                 });
                 view.ui.add(llExpand, "top-right");
 
